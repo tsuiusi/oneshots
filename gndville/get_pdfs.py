@@ -1,7 +1,8 @@
 from bs4 import BeautifulSoup
 import urllib3
 import requests
-from test import download_file
+from function import download_file, get_path
+import os
 
 url = "https://business.columbia.edu/heilbrunn/resources/graham-and-doddsville-newsletter"
 
@@ -28,7 +29,6 @@ for i in links:
         season = 'fall'
     else:
         season = 'spring'
-
     filename = season + '_' + str(year)
     download_file(i, filename + '.pdf')
 

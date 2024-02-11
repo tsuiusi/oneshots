@@ -6,7 +6,7 @@ import os
 url="https://business.columbia.edu/sites/default/files-efs/imce-uploads/Graham%20Doddsville%20Spring%202023%20Issue%20vFINAL%20(2023.04.27).pdf"
 
 def download_file(url, name):
-    save_dir = "/Users/rtty/documents/code/oneshots/gndville"
+    
     try:
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
@@ -17,7 +17,7 @@ def download_file(url, name):
                 filename = url.split('/')[-1]
 
 
-            with open(name, 'wb') as f:
+            with open(get_path(name), 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
 
@@ -26,3 +26,12 @@ def download_file(url, name):
         print(f'Error downloading {url}: {e}')
 
 # download_file(url, 'john.pdf')
+
+def get_path(name):
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    new_dir = os.path.join(cur_dir, "prints")
+    if not os.path.exists(new_dir):
+        os.mkdir(new_dir)
+
+    return os.path.join(new_dir, name)
+
