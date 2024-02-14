@@ -17,9 +17,12 @@ def add_filter(image, background, lcoord, rcoord):
     x_pos, y_pos = lcoord
 
     # Region of interest where the image will be placed
-    roi = background[y_pos:foreground.shape[0], x_pos: foreground.shape[1]]
+    roi = background[y_pos:y_pos + foreground.shape[0], x_pos: x_pos + foreground.shape[1]]
+    print(image.shape[0], image.shape[1])
+    print(foreground.shape[0], foreground.shape[1])
 
     # normalize alpha channels from 0-255 to 0-1
+    print(roi.shape)
     alpha_background = roi[:,:,3] / 255.0
     alpha_foreground = foreground[:,:,3] / 255.0
 
