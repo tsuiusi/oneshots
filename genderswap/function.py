@@ -24,7 +24,6 @@ def add_filter(image, background, lcoord, rcoord):
     roi = cv2.merge((roi, alpha_channel))
 
     # normalize alpha channels from 0-255 to 0-1
-    print(roi.shape)
     alpha_background = roi[:,:,3] / 255.0
     alpha_foreground = foreground[:,:,3] / 255.0
 

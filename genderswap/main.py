@@ -23,6 +23,18 @@ def draw_styled_keypoints(image, results):
             mp_drawing.DrawingSpec(color=(80, 256, 121), thickness=1, circle_radius=1)
     )
 
+def cv2draw(image, results):
+    n = 0
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    height, width = image.shape[:2]
+    if results.face_landmarks:
+        for i in results.face_landmarks.landmark:
+            x = np.round(i.x * width)
+            y = np.round(i.y * height)
+            cv2.circle(image, (x, y), 4, (255, 0, 0), 3)
+            cv2.putText(image, n, (x, y), font, 0.5, (255, 0, 0))
+
+
 def extract_keypoints(results):
     return np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(468*3)
 
@@ -47,9 +59,10 @@ with mphol.Holistic(min_detection_confidence=0.8, min_tracking_confidence = 0.8)
                 break
           
             img, results = detection(frame, holistic)
-            draw_styled_keypoints(img, results)
-            print(extract_keypoints(results))
-
+            # draw_styled_keypoints(img, results)
+            cv2draw(img, results)
+            print(results.face_landmarks) 
+            
             image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
             
             #try:
