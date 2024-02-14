@@ -1,11 +1,12 @@
 import cv2
 import mediapipe as mp
 import numpy as np
-
+from function import add_filter
 
 mphol = mp.solutions.holistic
 mp_drawing = mp.solutions.drawing_utils
 
+image = 'crown.png'
 
 def detection(img, model):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -48,8 +49,13 @@ with mphol.Holistic(min_detection_confidence=0.8, min_tracking_confidence = 0.8)
             img, results = detection(frame, holistic)
             draw_styled_keypoints(img, results)
             print(extract_keypoints(results))
-           
-            cv2.imshow('frame', img)
+
+            image = cv2.imread(image, cv2.IMREAD_UNCHANGED)
+            
+            #try:
+            cv2.imshow('frame', add_filter(image, img, (200, 400), (200, 600)))
+            #except:
+                #cv2.imshow('frame', img)
             
 
             # Press 'q' to exit the loop
@@ -57,7 +63,7 @@ with mphol.Holistic(min_detection_confidence=0.8, min_tracking_confidence = 0.8)
                 break
     except KeyboardInterrupt:
         # Handle any cleanup here if the loop is exited via keyboard interrupt
-        break
+        pass
     finally:
         # When everything done, release the capture
         cap.release()
