@@ -1,5 +1,6 @@
 import cv2
 import mediapipe as mp
+import numpy as np
 
 def resize_image(image, lcoord, rcoord):
     height, width = image.shape[:2]
@@ -18,8 +19,9 @@ def add_filter(image, background, lcoord, rcoord):
 
     # Region of interest where the image will be placed
     roi = background[y_pos:y_pos + foreground.shape[0], x_pos: x_pos + foreground.shape[1]]
-    print(image.shape[0], image.shape[1])
-    print(foreground.shape[0], foreground.shape[1])
+    height, width = roi.shape[:2]
+    alpha_channel = np.ones((height, width), dtype=image.dtype) * 255
+    roi = cv2.merge((roi, alpha_channel))
 
     # normalize alpha channels from 0-255 to 0-1
     print(roi.shape)
@@ -34,9 +36,9 @@ def add_filter(image, background, lcoord, rcoord):
     # set adjusted alpha and denormalize back to 0-255
     roi[:,:,3] = (1 - (1 - alpha_foreground) * (1 - alpha_background)) * 255
 
-    background[y_offset:y_offset+foreground.shape[0], x_offset:x_offset+foreground.shape[1]] = blended_result
+    background[y_pos:y_pos+foreground.shape[0], x_pos:x_pos+foreground.shape[1]] = roi[:, :, :3]
 
-    return blended_result
+    return background
 
 
 

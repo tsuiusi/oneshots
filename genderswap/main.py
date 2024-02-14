@@ -6,7 +6,7 @@ from function import add_filter
 mphol = mp.solutions.holistic
 mp_drawing = mp.solutions.drawing_utils
 
-image = 'crown.png'
+image_path = 'crown.png'
 
 def detection(img, model):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -50,7 +50,7 @@ with mphol.Holistic(min_detection_confidence=0.8, min_tracking_confidence = 0.8)
             draw_styled_keypoints(img, results)
             print(extract_keypoints(results))
 
-            image = cv2.imread(image, cv2.IMREAD_UNCHANGED)
+            image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
             
             #try:
             cv2.imshow('frame', add_filter(image, img, (200, 400), (200, 600)))
