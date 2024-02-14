@@ -66,20 +66,16 @@ with mphol.Holistic(min_detection_confidence=0.8, min_tracking_confidence = 0.8)
           
             img, results = detection(frame, holistic)
             # draw_styled_keypoints(img, results)
-            cv2draw(img, results)
+            # cv2draw(img, results)
             
             image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
            
             try:
-                print(results.face_landmarks.landmark[64])
-                lcoord = get_coords(frame, results.face_landmarks.landmark[64])
+                lcoord = get_coords(frame, results.face_landmarks.landmark[162])
                 rcoord = get_coords(frame, results.face_landmarks.landmark[284]) 
-                
-                #try:
                 cv2.imshow('frame', add_filter(image, img, lcoord, rcoord))
-                #except:
-                    #cv2.imshow('frame', img)
             except:
+                print('not working')
                 cv2.imshow('frame', img)
             
 
