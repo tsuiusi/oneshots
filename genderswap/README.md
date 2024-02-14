@@ -14,4 +14,8 @@ The title is self explanatory.
 
 
 ## Deadlines
-1. By 14/2 I want a working filter up. 
+| Date | Goal |
+| -- | -- |
+| 14/02/24 | working filter |
+| 20/02/24 | wraparound crown | 
+
