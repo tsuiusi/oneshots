@@ -75,7 +75,6 @@ with mphol.Holistic(min_detection_confidence=0.8, min_tracking_confidence = 0.8)
                 rcoord = get_coords(frame, results.face_landmarks.landmark[284]) 
                 cv2.imshow('frame', add_filter(image, img, lcoord, rcoord))
             except:
-                print('not working')
                 cv2.imshow('frame', img)
             
 
