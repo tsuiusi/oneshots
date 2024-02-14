@@ -4,7 +4,7 @@ import numpy as np
 
 def resize_image(image, lcoord, rcoord):
     height, width = image.shape[:2]
-    scale_factor = width // (rcoord[1] - lcoord[1])
+    scale_factor = width // (rcoord[0] - lcoord[0])
 
     new_width = width // scale_factor
     new_height = height // scale_factor
@@ -13,6 +13,8 @@ def resize_image(image, lcoord, rcoord):
     return scaled_image
 
 def add_filter(image, background, lcoord, rcoord):
+
+
     foreground = resize_image(image, lcoord, rcoord) 
 
     x_pos, y_pos = lcoord

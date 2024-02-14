@@ -29,14 +29,20 @@ def cv2draw(image, results):
     height, width = image.shape[:2]
     if results.face_landmarks:
         for i in results.face_landmarks.landmark:
-            x = np.round(i.x * width)
-            y = np.round(i.y * height)
+            x = int(i.x * width)
+            y = int(i.y * height)
             cv2.circle(image, (x, y), 4, (255, 0, 0), 3)
-            cv2.putText(image, n, (x, y), font, 0.5, (255, 0, 0))
-
+            cv2.putText(image, str(n), (x, y), font, 0.5, (255, 0, 0))
+            n += 1
 
 def extract_keypoints(results):
     return np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(468*3)
+
+def get_coords(image, landmark):
+    height, width = image.shape[:2]
+    x = int(landmark.x * width)
+    y = int(landmark.y * height) 
+    return x, y
 
 cap = cv2.VideoCapture(0)
 
@@ -61,14 +67,20 @@ with mphol.Holistic(min_detection_confidence=0.8, min_tracking_confidence = 0.8)
             img, results = detection(frame, holistic)
             # draw_styled_keypoints(img, results)
             cv2draw(img, results)
-            print(results.face_landmarks) 
             
             image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-            
-            #try:
-            cv2.imshow('frame', add_filter(image, img, (200, 400), (200, 600)))
-            #except:
-                #cv2.imshow('frame', img)
+           
+            try:
+                print(results.face_landmarks.landmark[64])
+                lcoord = get_coords(frame, results.face_landmarks.landmark[64])
+                rcoord = get_coords(frame, results.face_landmarks.landmark[284]) 
+                
+                #try:
+                cv2.imshow('frame', add_filter(image, img, lcoord, rcoord))
+                #except:
+                    #cv2.imshow('frame', img)
+            except:
+                cv2.imshow('frame', img)
             
 
             # Press 'q' to exit the loop
