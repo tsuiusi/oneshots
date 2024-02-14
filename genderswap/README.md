@@ -11,6 +11,7 @@ The title is self explanatory.
 * From what I'm reading the rotation is done by anchoring certain points and getting the rotated points of the face (constants)
 * Something called procrustes projection alignment
 * Calculate the face's distances and landmarks and etc
+* Get image parameters from the name (landmarks, direction, etc) and pass it through the add_filter function later
 
 
 ## Deadlines
