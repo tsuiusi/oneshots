@@ -6,7 +6,7 @@ from function import add_filter
 mphol = mp.solutions.holistic
 mp_drawing = mp.solutions.drawing_utils
 
-image_path = 'crown.png'
+image_path = 'hat.png'
 
 def detection(img, model):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
