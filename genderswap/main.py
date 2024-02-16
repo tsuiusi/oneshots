@@ -6,7 +6,7 @@ from function import add_filter
 mphol = mp.solutions.holistic
 mp_drawing = mp.solutions.drawing_utils
 
-image_path = 'hat.png'
+image_path = 'crown.png' # 'crown.png'
 
 def detection(img, model):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -34,6 +34,19 @@ def cv2draw(image, results):
             cv2.circle(image, (x, y), 4, (255, 0, 0), 3)
             cv2.putText(image, str(n), (x, y), font, 0.5, (255, 0, 0))
             n += 1
+
+def cv2draw2(image, results):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    height, width = image.shape[:2]
+    if results.face_landmarks:
+        for i in range(len(results.face_landmarks.landmark)):
+            if i % 2 == 0:
+                x = int(results.face_landmarks.landmark[i].x * width)
+                y = int(results.face_landmarks.landmark[i].y * height)
+                cv2.circle(image, (x, y), 4, (255, 0, 0), 3)
+                cv2.putText(image, str(i), (x, y), font, 0.5, (255, 0, 0))
+
+                
 
 def extract_keypoints(results):
     return np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(468*3)
@@ -66,15 +79,18 @@ with mphol.Holistic(min_detection_confidence=0.8, min_tracking_confidence = 0.8)
           
             img, results = detection(frame, holistic)
             # draw_styled_keypoints(img, results)
-            # cv2draw(img, results)
+            # cv2draw2(img, results)
             
             image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
            
             try:
+                # crown landmarks 162, 284
+                # glasses landmarks 124, 342 
                 lcoord = get_coords(frame, results.face_landmarks.landmark[162])
                 rcoord = get_coords(frame, results.face_landmarks.landmark[284]) 
                 cv2.imshow('frame', add_filter(image, img, lcoord, rcoord))
             except:
+                print('error')
                 cv2.imshow('frame', img)
             
 

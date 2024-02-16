@@ -19,8 +19,9 @@ def add_filter(image, background, lcoord, rcoord):
 
     x_pos, y_pos = lcoord
 
-    # Region of interest where the image will be placed
-    roi = background[y_pos - foreground.shape[0]: y_pos, x_pos: x_pos + foreground.shape[1]]
+    # Region of interest where the image will be placed, two versions for crown and for glasses
+    # roi = background[y_pos - foreground.shape[0]: y_pos, x_pos: x_pos + foreground.shape[1]]
+    roi = background[y_pos: y_pos + foreground.shape[0], x_pos: x_pos + foreground.shape[1]]
     height, width = roi.shape[:2]
     alpha_channel = np.ones((height, width), dtype=image.dtype) * 255
     roi = cv2.merge((roi, alpha_channel))
@@ -36,8 +37,11 @@ def add_filter(image, background, lcoord, rcoord):
 
     # set adjusted alpha and denormalize back to 0-255
     roi[:,:,3] = (1 - (1 - alpha_foreground) * (1 - alpha_background)) * 255
+    
+    # again for glasses and for crown
+    # background[y_pos-foreground.shape[0]: y_pos, x_pos:x_pos+foreground.shape[1]] = roi[:, :, :3]
+    background[y_pos: y_pos + foreground.shape[0], x_pos:x_pos+foreground.shape[1]] = roi[:, :, :3]
 
-    background[y_pos-foreground.shape[0]: y_pos, x_pos:x_pos+foreground.shape[1]] = roi[:, :, :3]
 
     return background
 
