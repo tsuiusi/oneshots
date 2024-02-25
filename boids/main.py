@@ -13,27 +13,31 @@ class boid():
         # Parameters
         self.radius = 1
         self.avfactor = 1
-        self.matchfactor = 1
-        self.flock = 25
-    
-def avoidance(a, neighbors): # b is a list?
-    close_x = 0
-    close_y = 0
-    for i in neighbors:
-        close_x += a.x - i.x
-        close_y += a.y - i.y
+        self.alignfactor = 1
+        self.centerfactor = 1
+        self.flock = 25  
 
-    a.x_vel += close_x * a.avfactor
-    a.y_vel += close_y * a.avfactor
+    def alignment(self, boid):
+        self.x_vel += self.alignfactor * np.mean(self.x_vel, boid.x_vel)
+        self.y_vel += self.alignfactor * np.mean(self.y_vel, boid.y_vel)
 
-def alignment():
-     
+    def fov(self, boids):
+        domain = []
+        for i in boids:
+            if euclidean(i, self) <= self.radius:
+                domain.append(i)
+        return domain
 
-def fov(self):
-    pass
+    def avoidance(self, i):
+        # not exactly because it does have to align, but would sufficient alignment solve avoidance
+        self.x_vel += self.alignfactor * np.mean(self.x_vel, boid.x_vel)
+        self.y_vel += self.alignfactor * np.mean(self.y_vel, boid.y_vel)
 
-def centering(self):
-    pass
+    def centering(self, boids):
+        # ??? 
+        self.x -= self.centerfactor * (self.x - boid.x)
+        self.y -= self.centerfactor * (self.y - boid.y)
+         
 
 def euclidean(a, b):
     # application of handshake problem so it doesn't go O(N^2)
@@ -49,21 +53,17 @@ def apply_rules(a, boids):
     for i in boids: 
         if euclidean(a, i) < a.radius:
             # Alignment 
-            n += 1
-            tot_x += i.x_vel
-            tot_y += i.y_vel
+            boid.alignment(i)  
 
             # Avoidance
             boid.avoidance(i)
 
             # Centering
-            centering(i)
+            boid.centering(i)
 
 
    
-    # Alignment
-    a.x_vel += tot_x//n * a.matchfactor
-    a.y_vel += tot_y//n * a.matchfactor
+
     
 
 
