@@ -53,6 +53,12 @@ def apply_rules(a, boids):
             tot_x += i.x_vel
             tot_y += i.y_vel
 
+            # Avoidance
+            boid.avoidance(i)
+
+            # Centering
+            centering(i)
+
 
    
     # Alignment
