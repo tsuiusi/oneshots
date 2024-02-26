@@ -12,14 +12,14 @@ class boid():
 
         # Parameters
         self.radius = 1
-        self.avfactor = 1
+        self.avfactor = 0.5
         self.alignfactor = 1
         self.centerfactor = 1
         self.flock = 25  
 
     def alignment(self, boid):
-        self.x_vel += self.alignfactor * np.mean(self.x_vel, boid.x_vel)
-        self.y_vel += self.alignfactor * np.mean(self.y_vel, boid.y_vel)
+        self.x_vel, boid.x_vel += self.alignfactor * np.mean(self.x_vel, boid.x_vel)
+        self.y_vel, boid.y_vel += self.alignfactor * np.mean(self.y_vel, boid.y_vel)
 
     def fov(self, boids):
         domain = []
@@ -30,14 +30,21 @@ class boid():
 
     def avoidance(self, i):
         # not exactly because it does have to align, but would sufficient alignment solve avoidance
-        self.x_vel += self.alignfactor * np.mean(self.x_vel, boid.x_vel)
-        self.y_vel += self.alignfactor * np.mean(self.y_vel, boid.y_vel)
+        self.x_vel, i.x_vel += self.alignfactor * i.x_vel, self.alignfactor * self.x_vel
+        self.y_vel, i.y_vel += self.alignfactor * i.y_vel, self.alignfactor * self.y_vel
 
     def centering(self, boids):
-        # ??? 
-        self.x -= self.centerfactor * (self.x - boid.x)
-        self.y -= self.centerfactor * (self.y - boid.y)
-         
+        xs = []
+        ys = []
+        for i in boids:
+            if euclidean(self, i) < self.radius:
+                xs.append(i.x)
+                ys.append(i.y)
+
+        center = np.mean(xs), np.mean(ys)
+
+        self.x_vel += self.centerfactor * (np.mean(xs) - self.x)
+        self.y_vel += self.centerfactor * (np.mean(ys) - self.y)         
 
 def euclidean(a, b):
     # application of handshake problem so it doesn't go O(N^2)
@@ -51,6 +58,9 @@ def apply_rules(a, boids):
     tot_y = 0
     n = 0
     for i in boids: 
+        # Centering
+        boid.centering(boids)
+        
         if euclidean(a, i) < a.radius:
             # Alignment 
             boid.alignment(i)  
@@ -58,8 +68,7 @@ def apply_rules(a, boids):
             # Avoidance
             boid.avoidance(i)
 
-            # Centering
-            boid.centering(i)
+
 
 
    
