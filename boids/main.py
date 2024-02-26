@@ -1,4 +1,5 @@
 import numpy as np
+import cv2
 
 class boid():
     def __init__(self):
@@ -62,11 +63,28 @@ def apply_rules(a, boids):
         boid.centering(boids)
         
         if euclidean(a, i) < a.radius:
-            # Alignment 
-            boid.alignment(i)  
-
             # Avoidance
             boid.avoidance(i)
+            
+            # Alignment 
+            boid.alignment(i)
+
+def main(n):
+    boids = [boid() for _ in range(n)]
+
+    while True:
+        for i in range(n):
+            apply_rules(boids[n], boids[:n, n:]) # i forgot how to do this
+
+        if cv2.waitKey(1) = ord('q'):
+            break
+
+    cv2.destroyAllWindows()
+
+if __init__ == "__main__":
+    main()
+
+
 
 
 
