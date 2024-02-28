@@ -16,13 +16,20 @@ class boid():
         self.avfactor = 0.5
         self.alignfactor = 1
         self.centerfactor = 1
-        self.flock = 25  
+        self.flock = 25
 
-    def alignment(self, boid):
-        self.x_vel+= self.alignfactor * np.mean(self.x_vel, boid.x_vel)
-        boid.x_vel += self.alignfactor * np.mean(self.x_vel, boid.x_vel)
-        self.y_vel += self.alignfactor * np.mean(self.y_vel, boid.y_vel)
-        boid.y_vel += self.alignfactor * np.mean(self.y_vel, boid.y_vel)
+
+    def alignment(self, neighbors):
+
+		# Calculate the average velocities of the neighbors
+        avg_x_vel = np.mean([boid.x_vel for boid in neighbors])
+        avg_y_vel = np.mean([boid.y_vel for boid in neighbors])
+
+		# Adjust the boid's velocity towards the average velocity of its neighbors
+        # still doesn't work
+        self.x_vel += np.round(self.alignfactor * (avg_x_vel - self.x_vel))
+        self.y_vel += np.round(self.alignfactor * (avg_y_vel - self.y_vel))
+        
 
     def fov(self, boids):
         domain = []
@@ -31,22 +38,17 @@ class boid():
                 domain.append(i)
         return domain
 
-    def avoidance(self, i):
+    def avoidance(self, boids):
         # not exactly because it does have to align, but would sufficient alignment solve avoidance
-        self.x_vel += self.alignfactor * i.x_vel
-        i.x_vel += self.alignfactor * self.x_vel
-        self.y_vel += self.alignfactor * i.y_vel
-        i.y_vel += self.alignfactor * self.y_vel
-
-    def centering(self, boids):
-        xs = []
-        ys = []
         for i in boids:
-            if self.euclidean(i) < self.radius:
-                xs.append(i.x)
-                ys.append(i.y)
+            self.x_vel += self.avfactor * i.x_vel
+            i.x_vel += self.avfactor * self.x_vel
+            self.y_vel += self.avfactor * i.y_vel
+            i.y_vel += self.avfactor * self.y_vel
 
-        center = np.mean(xs), np.mean(ys)
+    def centering(self, boids):   
+        xs = [i.x for i in boids]
+        ys = [i.y for i in boids]
 
         self.x_vel += self.centerfactor * (np.mean(xs) - self.x)
         self.y_vel += self.centerfactor * (np.mean(ys) - self.y)    
@@ -60,15 +62,17 @@ class boid():
         tot_y = 0
         n = 0
         for i in boids: 
+			# Finding boids in radius
+            boids = self.fov(boids)
+
             # Centering
             self.centering(boids)
-            
-            if self.euclidean(i) < self.radius:
-                # Avoidance
-                self.avoidance(i)
-                
-                # Alignment 
-                self.alignment(i)
+		
+			# Avoidance
+            self.avoidance(boids)
+			
+			# Alignment 
+            self.alignment(boids)
 
 
     def euclidean(self, b):
