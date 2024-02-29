@@ -55,26 +55,26 @@ class boid():
         self.x_vel += self.centerfactor * (np.mean(xs) - self.x)
         self.y_vel += self.centerfactor * (np.mean(ys) - self.y)    
 
-    def rotation(self):        
-        return np.arctan(np.array([self.y_vel / self.x_vel]))
+    def rotation(self):
+        try:
+            return np.arctan(np.array([self.y_vel / self.x_vel]))
+        except:
+            print('failed rotation')
+            pass
     
 
-    def apply_rules(self, boids):
-        tot_x = 0
-        tot_y = 0
-        n = 0
-        for i in boids: 
-			# Finding boids in radius
-            boids = self.fov(boids)
+    def apply_rules(self, all_boids):
+        # Finding boids in radius
+        visible_boids = self.fov(all_boids)
 
-            # Centering
-            self.centering(boids)
-		
-			# Avoidance
-            self.avoidance(boids)
-			
-			# Alignment 
-            self.alignment(boids)
+        # Centering
+        self.centering(visible_boids)
+    
+        # Avoidance
+        self.avoidance(visible_boids)
+        
+        # Alignment 
+        self.alignment(visible_boids)
 
 
     def euclidean(self, b):
@@ -98,10 +98,8 @@ def main(n):
 
     cv2.destroyAllWindows()
 
-if "__init__" == "__main__":
+if __name__ == "__main__":
     main(5)
-
-main(5)
 
 
 
