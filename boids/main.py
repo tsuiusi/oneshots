@@ -20,15 +20,17 @@ class boid():
 
 
     def alignment(self, neighbors):
-
 		# Calculate the average velocities of the neighbors
         avg_x_vel = np.mean([boid.x_vel for boid in neighbors])
         avg_y_vel = np.mean([boid.y_vel for boid in neighbors])
+        print(f'Average X velocity: {avg_x_vel}')
+        print(f'Average Y velocity: {avg_y_vel}')
 
-		# Adjust the boid's velocity towards the average velocity of its neighbors
+        # Adjust the boid's velocity towards the average velocity of its neighbors
         # still doesn't work
         self.x_vel += np.round(self.alignfactor * (avg_x_vel - self.x_vel))
         self.y_vel += np.round(self.alignfactor * (avg_y_vel - self.y_vel))
+            
         
 
     def fov(self, boids):
