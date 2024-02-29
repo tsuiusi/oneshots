@@ -82,7 +82,7 @@ class boid():
         x = self.x - b.x
         y = self.y - b.y
 
-        return np.sqrt(x^2 + y^2)
+        return np.sqrt(x**2 + y**2)
 
 
 
