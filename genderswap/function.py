@@ -20,7 +20,7 @@ def add_filter(image, background, lcoord, rcoord, top=True):
     x_pos, y_pos = lcoord
 
     # Region of interest where the image will be placed, two versions for crown and for glasses
-    if top:
+    if not top:
         roi = background[y_pos: y_pos + foreground.shape[0], x_pos: x_pos + foreground.shape[1]]
     else:
         roi = background[y_pos - foreground.shape[0]: y_pos, x_pos: x_pos + foreground.shape[1]]
@@ -42,7 +42,7 @@ def add_filter(image, background, lcoord, rcoord, top=True):
     roi[:,:,3] = (1 - (1 - alpha_foreground) * (1 - alpha_background)) * 255
     
     # again for glasses and for crown
-    if top: 
+    if not top: 
         background[y_pos: y_pos + foreground.shape[0], x_pos:x_pos+foreground.shape[1]] = roi[:, :, :3]
     else:
         background[y_pos-foreground.shape[0]: y_pos, x_pos:x_pos+foreground.shape[1]] = roi[:, :, :3]
