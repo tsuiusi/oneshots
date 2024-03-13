@@ -1,6 +1,7 @@
 // import { Fragment } from "react";
 // Can be achieved by just using <> and not importing fragment
-import { MouseEvent } from "react";
+// import { MouseEvent } from "react";
+import {useState} from "react";
 
 // a component cannot return more than 1 element (listgroup can only return listgroup and not h1)
 // this can be solved by wrapping the whole thing in a div or fragments
@@ -10,20 +11,19 @@ function ListGroup() {
 		'Hong Kong', 
 		'London',
 		'Pennsylvania'
-	];
-	let selectedIndex = -1;
+	];	
+
 	// Hook: tells React this component can have data or states that change over time
-	const arr[selectedIndex, setSelectedIndex] = useState(-1);
-	arr[0]
-	arr[1]
+	const [selectedIndex, setSelectedIndex] = useState(-1);
 
 	const getMessage = () => {
 		return items.length === 0 ? <p>empty</p> : null;
 	}
 
-	const handleClick = (event: MouseEvent) => {
-		console.log(event)
-	}
+	// Event handler
+	// const handleClick = (event: MouseEvent) => {
+	// 	console.log(event)
+	// }
 
 	return (
 		<>	
@@ -36,7 +36,7 @@ function ListGroup() {
 					items.map((item, index) => (<li 
 						className={selectedIndex === index ? 'list-group-item active' : 'list-group-item'}
 						key={item} 
-						onClick={() => {selectedIndex = index;}}
+						onClick={() => { setSelectedIndex(index); }}
 					>
 						{item}
 					</li>))
