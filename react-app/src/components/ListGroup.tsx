@@ -7,11 +7,12 @@ import {useState} from "react";
 interface Props {
 	items: string[];
 	heading: string;
+	selectItem: (item: string) => void;
 }
 
 // a component cannot return more than 1 element (listgroup can only return listgroup and not h1)
 // this can be solved by wrapping the whole thing in a div or fragments
-function ListGroup({ items, heading }: Props) {
+function ListGroup({ items, heading, selectItem }: Props) {
 	// Hook: tells React this component can have data or states that change over time
 	const [selectedIndex, setSelectedIndex] = useState(-1);
 
@@ -35,7 +36,10 @@ function ListGroup({ items, heading }: Props) {
 					items.map((item, index) => (<li 
 						className={selectedIndex === index ? 'list-group-item active' : 'list-group-item'}
 						key={item} 
-						onClick={() => { setSelectedIndex(index); }}
+						onClick={() => { 
+							setSelectedIndex(index); 
+							selectItem(item);
+						}}
 					>
 						{item}
 					</li>))
