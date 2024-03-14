@@ -3,22 +3,21 @@
 // import { MouseEvent } from "react";
 import {useState} from "react";
 
+
+interface Props {
+	items: string[];
+	heading: string;
+}
+
 // a component cannot return more than 1 element (listgroup can only return listgroup and not h1)
 // this can be solved by wrapping the whole thing in a div or fragments
-function ListGroup() {
-	let items = [
-		'New York',
-		'Hong Kong', 
-		'London',
-		'Pennsylvania'
-	];	
-
+function ListGroup({ items, heading }: Props) {
 	// Hook: tells React this component can have data or states that change over time
 	const [selectedIndex, setSelectedIndex] = useState(-1);
 
-	const getMessage = () => {
-		return items.length === 0 ? <p>empty</p> : null;
-	}
+	// const getMessage = () => {
+	// 	return items.length === 0 ? <p>empty</p> : null;
+	// }
 
 	// Event handler
 	// const handleClick = (event: MouseEvent) => {
@@ -27,8 +26,8 @@ function ListGroup() {
 
 	return (
 		<>	
-			<h1>List</h1>
-			{/* {items.length === 0 && <p>empty</p>} */}
+			<h1>{heading}</h1>
+			{items.length === 0 && <p>empty</p>}
 			<ul className="list-group">
 				{
 					// If we're retrieving items from an API it's usually a class
