@@ -35,28 +35,72 @@ class ResBlock(nn.Module):
     Take the input, normal forward, recast input onto original
     y = F(x) + x where F(x) is the mapping function (wx + b)
     """
-    ### 
+    # i can write a block for each block, but the better option is to create layers based on the input parameters 
+    # the no_blocks is variable but the interior structure of each layer is the same, except the no. channels
+    # 
+    expansion = 1
 
-    def __init__(self, no_blocks, no_layers, in_channels, out_channels, kernel_size, stride=1):
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, downsample=None): # Block as described in the paper
         super().__init__()
-        # No weights and biases because lazy eval i can call resblock.parameters() later?
-        self.no_blocks = no_blocks
-        self.no_layers = no_layers
-        self.in_channels = in_channels
-        self.out_channels = out_channels 
-        self.kernel_size = 3 # It's a square
+        """
+        in_channels: int; add however many IO channels the block specifies (64, 64, 128, 256, 512) 
+        out_channels: int; 
+        """
+        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, bias=True)
+        self.bn1 = nn.BatchNorm(num_features=out_channels)
+        self.relu = nn.ReLU()
+        self.conv2 = nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, bias=True)
+        self.bn2 = nn.BatchNorm(num_features=out_channels)
+
+        self.downsample = downsample
         self.stride = stride
     
     def forward(self, x):
-         
+        cache = x
+
+        # First layer
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+       
+        # Second layer
+        x = self.conv2(x)
+        x = self.bn2(x)
+        
+        # Downsample?
+        if self.downsample is not None:
+            cache = self.downsample(x)
+
+        x = mx.add(x, cache)
+        out = self.relu(x)
+
         return out
 
 
 class ResNet (nn.Module):
-    def __init__(self):
+    def __init__(self, block, layers, num_classes=1000):
+        """
+        block: ResBlock
+        layers = list of how many blocks are in each layer [3, 4, 6, 3]
+        num_classes: no. classes, for classification
+        """
         super().__init__()
-        self.conv1 = nn.Conv2d() # Fill in the hyperparams later
-            
-    def relu(self, x):
-        return nn.relu(x)
+        self.in_channels = 64
+        self.conv1 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.bn1 = nn.BatchNorm(num_features=64)
+        self.relu = nn.ReLU()
+
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+        self.layer1 = self._make_layer(block, 64, layer[0])
+        self.layer2 = self._make_layer(block, 128, layer[1], stride=2)
+        self.layer3 = self._make_layer(block, 256, layer[2], stride=2)
+        self.layer4 = self._make_layer(block, 512, layer[3], stride=2)
+
+        self.avgpool = nn.AvgPool2d((1, 1))
+        self.fc = nn.Linear(input_dims=512*block.expansion, num_classes)
+    
+    def _make_layer(self, block, in_channels, blocks, stride=1):
+        downsample = None
+        if stride != 2 or self.in_channels
     
