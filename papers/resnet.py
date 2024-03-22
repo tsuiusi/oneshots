@@ -38,7 +38,7 @@ class ResBlock(nn.Module):
     # i can write a block for each block, but the better option is to create layers based on the input parameters 
     # the no_blocks is variable but the interior structure of each layer is the same, except the no. channels
     # 
-    expansion = 1
+    expansion = 1 # Determines the ratio between IO channelsin a resblock, controls the dimesionality of the feature maps
 
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, downsample=None): # Block as described in the paper
         super().__init__()
@@ -76,6 +76,8 @@ class ResBlock(nn.Module):
 
         return out
 
+def conv1x1(in_channels, out_channels, stride):
+    return nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1, stride=stride, bias=False)
 
 class ResNet (nn.Module):
     def __init__(self, block, layers, num_classes=1000):
@@ -99,8 +101,37 @@ class ResNet (nn.Module):
 
         self.avgpool = nn.AvgPool2d((1, 1))
         self.fc = nn.Linear(input_dims=512*block.expansion, num_classes)
+
     
-    def _make_layer(self, block, in_channels, blocks, stride=1):
+    def _make_layer(self, block, out_channels, blocks, stride=1):
         downsample = None
-        if stride != 2 or self.in_channels
-    
+        if stride != 1 or self.in_channels != out_channels * block.expansion:
+            downsample = nn.Sequential(
+                    conv1x1(self.in_channels, out_channels * block.expansion, stride, downsample), 
+                    nn.BatchNorm2d(out_channels * block.expansion)
+            )
+
+        layers = []
+        layers.append(block(self.in_channels, out_channels, stride, downsample))
+        for _ in range(1, blocks):
+            layers.append(block(self.in_channels, out_channels))
+
+        return nn.Sequential(*layers)
+
+
+    def forward(self, x):
+        x = self.conv_1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+
+        x = self.maxpool(x)
+
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+
+        x = self.avgpool(x)
+        out  = self.fc(x)
+
+        return out
