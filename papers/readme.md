@@ -23,4 +23,4 @@ pip install numpy mlx torch pandas matplotlib-pyplot
 * Residual network
 * Very vertical
 
-
+![ResBlock](resblock.png)
