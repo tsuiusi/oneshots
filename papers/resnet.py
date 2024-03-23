@@ -1,7 +1,7 @@
 import time
 import numpy as np
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import mlx
 import mlx.nn as nn
 import mlx.core as mx
@@ -191,16 +191,22 @@ def predict(model, image):
     predicted_class = mx.argmax(predictions, axis=1)
     return predicted_class.item()
 
+def batch_iterate(batch_size, X, y):
+    perm = mx.array(np.random.permutation(y.size))
+    for s in range(0, y.size, batch_size):
+        ids = perm[s : s + batch_size]
+        yield X[ids], y[ids]
+
 # Training loop
 for i in range(no_epochs):
     tic = time.perf_counter()
     for X, y in batch_iterate(batch_size, train_images, train_labels):
-        loss, grads = loss_and_grad_fn(model, X, y)
-        optimizer.update(model, grads)
-        mx.eval(model.parameters(), optimizer.state)
-    accuracy = eval_fn(model, test_images, test_labels)
-	toc = time.perf_counter()
-	print(
+        loss, grads = loss_and_grad_fn(resnet34, X, y)
+        optimizer.update(resnet34, grads)
+        mx.eval(resnet34.parameters(), optimizer.state)
+    accuracy = eval_fn(resnet34, test_images, test_labels)
+    toc = time.perf_counter()
+    print(
 		f"Epoch {e}: Test accuracy {accuracy.item():.3f},"
 		f" Time {toc - tic:.3f} (s)"
 	)
