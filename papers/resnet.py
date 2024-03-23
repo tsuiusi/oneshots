@@ -1,10 +1,11 @@
+import time
 import numpy as np
 import pandas as pd
 import matplotlib as plt
 import mlx
 import mlx.nn as nn
 import mlx.core as mx
-from mlx.optimizers import Adam
+from mlx.optimizers import SGD
 
 from datasets import load_dataset
 
@@ -141,13 +142,6 @@ class ResNet (nn.Module):
 
         return out
 
-
-def loss_fn(model, X, y):
-    return mx.mean(nn.losses.cross_entropy(model(X), y))
-
-def eval_fn(model, X, y):
-    return mx.mean(mx.argmax(model(X), axis=1) == y)
-
 """
 Work for tmr:
     * figure out how to train the model; what's batch iterate and what do i do
@@ -157,10 +151,43 @@ Work for tmr:
     * load weights
 """
 
+# Hyperparameters
+lr = 1e-1 # Learning rate
+momentum = 9e-1
+dr = 1e-4 # Decay rate 
+no_epochs = 10
+batch_size = 256
+layers = [3, 4, 6, 3]
 
-optimizer = Adam(0.1)
 
-resnet34 = ResNet(ResBlock, [3, 4, 6, 3])
+# Initialize network
+resnet34 = ResNet(ResBlock, layers) 
 mx.eval(resnet34.parameters())
 
-print(dataset)
+
+# Optimizers, functions
+def loss_fn(model, X, y):
+    return mx.mean(nn.losses.cross_entropy(model(X), y))
+
+def eval_fn(model, X, y):
+    return mx.mean(mx.argmax(model(X), axis=1) == y)
+
+loss_and_grad_fn = nn.value_and_grad(resnet34, loss_fn)
+optimizer = SGD(lr, momentum, dr) 
+
+
+# Training loop
+for i in range(no_epochs):
+    tic = time.perf_counter()
+    for X, y in batch_iterate(batch_size, train_images, train_labels):
+        loss, grads = loss_and_grad_fn(model, X, y)
+        optimizer.update(model, grads)
+        mx.eval(model.parameters(), optimizer.state)
+    accuracy = eval_fn(model, test_images, test_labels)
+	toc = time.perf_counter()
+	print(
+		f"Epoch {e}: Test accuracy {accuracy.item():.3f},"
+		f" Time {toc - tic:.3f} (s)"
+	)
+
+ 
