@@ -4,6 +4,12 @@ import matplotlib as plt
 import mlx
 import mlx.nn as nn
 import mlx.core as mx
+from mlx.optimizers import Adam
+
+from datasets import load_dataset
+
+# If the dataset is gated/private, make sure you have run huggingface-cli login
+dataset = load_dataset("imagenet-1k")
 
 
 """
@@ -13,6 +19,7 @@ Notes:
     * Image is resized with its shorter size sampled in [256, 480] for scale augmentation 
     * Conv3-64 = 64 3x3 filters, resulting in 64 output features
     * SGD with batch size of 256
+    * Works with 3.12 but not 3.9
 Options:
     1. Define each layer, then code a class that takes everything and chains them together
     2. Define the blocks and forward in the class
@@ -76,8 +83,6 @@ class ResBlock(nn.Module):
 
         return out
 
-def conv1x1(in_channels, out_channels, stride):
-    return nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1, stride=stride, bias=False)
 
 class ResNet (nn.Module):
     def __init__(self, block, layers, num_classes=1000):
@@ -94,21 +99,21 @@ class ResNet (nn.Module):
 
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layer1 = self._make_layer(block, 64, layer[0])
-        self.layer2 = self._make_layer(block, 128, layer[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, layer[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, layer[3], stride=2)
+        self.layer1 = self._make_layer(block, 64, layers[0])
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
 
         self.avgpool = nn.AvgPool2d((1, 1))
-        self.fc = nn.Linear(input_dims=512*block.expansion, num_classes)
+        self.fc = nn.Linear(input_dims=512*block.expansion, output_dims=num_classes)
 
     
     def _make_layer(self, block, out_channels, blocks, stride=1):
         downsample = None
         if stride != 1 or self.in_channels != out_channels * block.expansion:
             downsample = nn.Sequential(
-                    conv1x1(self.in_channels, out_channels * block.expansion, stride, downsample), 
-                    nn.BatchNorm2d(out_channels * block.expansion)
+                    nn.Conv2d(in_channels=self.in_channels, out_channels=out_channels * block.expansion, kernel_size=1, stride=stride, bias=False),  
+                    nn.BatchNorm(out_channels * block.expansion)
             )
 
         layers = []
@@ -135,3 +140,27 @@ class ResNet (nn.Module):
         out  = self.fc(x)
 
         return out
+
+
+def loss_fn(model, X, y):
+    return mx.mean(nn.losses.cross_entropy(model(X), y))
+
+def eval_fn(model, X, y):
+    return mx.mean(mx.argmax(model(X), axis=1) == y)
+
+"""
+Work for tmr:
+    * figure out how to train the model; what's batch iterate and what do i do
+    * use gpu
+    * actually train
+    * save weights
+    * load weights
+"""
+
+
+optimizer = Adam(0.1)
+
+resnet34 = ResNet(ResBlock, [3, 4, 6, 3])
+mx.eval(resnet34.parameters())
+
+print(dataset)
