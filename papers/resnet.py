@@ -151,11 +151,20 @@ Work for tmr:
     * load weights
 """
 
+# Data preparation
+train_images = dataset['train']['image']
+train_labels = dataset['train']['label']
+val_images = dataset['validation']['image']
+val_labels = dataset['validation']['label']
+test_images = dataset['test']['image']
+test_labels = dataset['test']['label']
+
+
 # Hyperparameters
 lr = 1e-1 # Learning rate
 momentum = 9e-1
 dr = 1e-4 # Decay rate 
-no_epochs = 10
+no_epochs = 5
 batch_size = 256
 layers = [3, 4, 6, 3]
 
@@ -175,6 +184,12 @@ def eval_fn(model, X, y):
 loss_and_grad_fn = nn.value_and_grad(resnet34, loss_fn)
 optimizer = SGD(lr, momentum, dr) 
 
+def predict(model, image):
+    image = mx.array(image)
+    image = image.reshape(1, -1)
+    predictions = model(image)
+    predicted_class = mx.argmax(predictions, axis=1)
+    return predicted_class.item()
 
 # Training loop
 for i in range(no_epochs):
@@ -190,4 +205,5 @@ for i in range(no_epochs):
 		f" Time {toc - tic:.3f} (s)"
 	)
 
- 
+resnet34.save_weights('resnet34') 
+
