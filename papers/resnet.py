@@ -1,7 +1,7 @@
 import time
 import numpy as np
 import pandas as pd
-from PIL import image
+from PIL import Image
 import matplotlib.pyplot as plt
 import mlx
 import mlx.nn as nn
@@ -9,10 +9,6 @@ import mlx.core as mx
 from mlx.optimizers import SGD
 
 from datasets import load_dataset
-
-# If the dataset is gated/private, make sure you have run huggingface-cli login
-dataset = load_dataset("imagenet-1k")
-
 
 """
 Notes:
@@ -155,12 +151,16 @@ Errors with loading the dataset; do i need to preprocess and reshape the data; i
 """
 
 # Data preparation
-train_images = dataset['train']['image']
-train_labels = dataset['train']['label']
-val_images = dataset['validation']['image']
-val_labels = dataset['validation']['label']
-test_images = dataset['test']['image']
-test_labels = dataset['test']['label']
+# If the dataset is gated/private, make sure you have run huggingface-cli login
+train_set = load_dataset("imagenet-1k", split='train')
+
+train_images = train_set['image']
+train_labels = train_set['label']
+
+test_set = load_dataset("imagenet-1k", split='test')
+
+test_images = test_set['image']
+test_labels = test_set['label']
 
 def preprocess(image_path):
     image = Image.open(image_path)
@@ -217,13 +217,21 @@ def batch_iterate(batch_size, X, y):
 # Training loop
 for i in range(no_epochs):
     tic = time.perf_counter()
-    for X, y in batch_iterate(batch_size, train_images, train_labels):
+    
+    # Preprocess training images
+    preprocessed_train_images = [preprocess_image(image) for image in train_images]
 
+    for X, y in batch_iterate(batch_size, preprocessed_train_images, train_labels):
         loss, grads = loss_and_grad_fn(resnet34, X, y)
         optimizer.update(resnet34, grads)
         mx.eval(resnet34.parameters(), optimizer.state)
-    accuracy = eval_fn(resnet34, test_images, test_labels)
+
+    # Preprocess test images
+    preprocessed_test_images = [preprocess(image) for image in test_images]
+
+    accuracy = eval_fn(resnet34, preprocessed_test_images, test_labels)
     toc = time.perf_counter()
+
     print(
 		f"Epoch {e}: Test accuracy {accuracy.item():.3f},"
 		f" Time {toc - tic:.3f} (s)"
