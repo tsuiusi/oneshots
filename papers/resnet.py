@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import pandas as pd
+from PIL import image
 import matplotlib.pyplot as plt
 import mlx
 import mlx.nn as nn
@@ -149,6 +150,8 @@ Work for tmr:
     * actually train
     * save weights
     * load weights
+
+Errors with loading the dataset; do i need to preprocess and reshape the data; is the loop and batch_iterate even right?
 """
 
 # Data preparation
@@ -158,6 +161,19 @@ val_images = dataset['validation']['image']
 val_labels = dataset['validation']['label']
 test_images = dataset['test']['image']
 test_labels = dataset['test']['label']
+
+def preprocess(image_path):
+    image = Image.open(image_path)
+    image.thumbnail((256, 256)) # Resize the image, probably unnecessary
+
+    # Crop 
+    crop_size = 224
+    left = random.randint(0, image.width - crop_size)
+    right = left + crop_size
+    top = random.randint(0, image.height - crop_size)
+    bottom = top + crop_size
+    
+    return image.crop((left, top, right, bottom))
 
 
 # Hyperparameters
@@ -197,10 +213,12 @@ def batch_iterate(batch_size, X, y):
         ids = perm[s : s + batch_size]
         yield X[ids], y[ids]
 
+
 # Training loop
 for i in range(no_epochs):
     tic = time.perf_counter()
     for X, y in batch_iterate(batch_size, train_images, train_labels):
+
         loss, grads = loss_and_grad_fn(resnet34, X, y)
         optimizer.update(resnet34, grads)
         mx.eval(resnet34.parameters(), optimizer.state)
