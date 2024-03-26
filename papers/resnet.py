@@ -61,7 +61,7 @@ class ResBlock(nn.Module):
         self.downsample = downsample
         self.stride = stride
     
-    def forward(self, x):
+    def __call__(self, x):
         cache = x
 
         # First layer
@@ -84,7 +84,7 @@ class ResBlock(nn.Module):
 
 
 class ResNet (nn.Module):
-    def __init__(self, block, layers, num_classes=1000):
+    def __init__(self, block, layers, num_classes=1000, stride=1):
         """
         block: ResBlock
         layers = list of how many blocks are in each layer [3, 4, 6, 3]
@@ -92,7 +92,7 @@ class ResNet (nn.Module):
         """
         super().__init__()
         self.in_channels = 64
-        self.conv1 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm(num_features=64)
         self.relu = nn.ReLU()
 
@@ -117,15 +117,15 @@ class ResNet (nn.Module):
 
         layers = []
         layers.append(block(self.in_channels, out_channels, stride, downsample))
+        self.in_channels = out_channels * block.expansion # Update in_channels
         for _ in range(1, blocks):
-            layers.append(block(self.in_channels, out_channels))
+            layers.append(block(self.in_channels, out_channels))  # Use self.in_channels instead of out_channels
 
         return nn.Sequential(*layers)
 
 
-    def __call__(self, x):
-        if not isinstance(x, mx.array):
-            x = map(mx.array, x)
+    def __call__(self, x): 
+        x = mx.array(x)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -254,7 +254,6 @@ for i in range(no_epochs):
 
     for X, y in batch_iterate(batch_size, preprocessed_train_images, train_labels):
         print(type(X))
-        print(X[0])
         loss, grads = loss_and_grad_fn(resnet34, X, y)
         optimizer.update(resnet34, grads)
         mx.eval(resnet34.parameters(), optimizer.state)
