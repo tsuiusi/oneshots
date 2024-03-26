@@ -181,6 +181,17 @@ def preprocess(image):
     # Convert the image to a NumPy array
     image_array = np.array(image)
 
+    # Check the number of channels
+    if image_array.ndim == 2:
+        image_array = np.repeat(image_array[..., np.newaxis], 3, axis=-1) # turn grayscale -> RGB
+    elif image_array.ndim == 3 and image_array.shape[-1] == 1:
+        image_array = np.repeat(image_array, 3, axis=-1) # make the last dim 3
+    elif image_array.ndim == 3 and image_array.shape[-1] != 3:
+        if image_array.shape[-1] > 3:
+            image_array = image_array[..., :3]
+        else:
+            image_array = np.pad(image_array, ((0, 0), (0, 0), (0, 3 - image_array.shape[-1])), mode='constant')
+
     # Normalize the pixel values
     normalized_image = (image_array - np.mean(image_array)) / np.std(image_array)
 
@@ -225,12 +236,13 @@ def batch_iterate(batch_size, X, y):
         start = i * batch_size
         end = start + batch_size
         ids = np.arange(start, end) # ids is a list of indices
-        yield np.asarray([np.expand_dims(X[i], axis=-1) if X[i].ndim == 3 else X[i] for i in ids]), np.array([y[i] for i in ids]) # Yield so it returns X, y but keeps looping
+        yield np.asarray([X[i] for i in ids]), np.array([y[i] for i in ids]) # Yield so it returns X, y but keeps looping
 
     if len(X) % batch_size != 0:
         start = no_batches * batch_size
         ids = np.arange(start, len(X))
-        yield np.asarray([np.expand_dims(X[i], axis=-1) if X[i].ndim == 3 else X[i] for i in ids]), np.array([y[i] for i in ids])
+        yield np.asarray([X[i] for i in ids]), np.array([y[i] for i in ids])
+
         
 # Training loop
 for i in range(no_epochs):
@@ -241,6 +253,8 @@ for i in range(no_epochs):
     preprocessed_train_images = [preprocess(image) for image in train_images]
 
     for X, y in batch_iterate(batch_size, preprocessed_train_images, train_labels):
+        print(type(X))
+        print(X[0])
         loss, grads = loss_and_grad_fn(resnet34, X, y)
         optimizer.update(resnet34, grads)
         mx.eval(resnet34.parameters(), optimizer.state)
