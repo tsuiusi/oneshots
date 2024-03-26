@@ -2,6 +2,7 @@ import time
 import numpy as np
 import pandas as pd
 from PIL import Image
+import random
 import matplotlib.pyplot as plt
 import mlx
 import mlx.nn as nn
@@ -122,8 +123,10 @@ class ResNet (nn.Module):
         return nn.Sequential(*layers)
 
 
-    def forward(self, x):
-        x = self.conv_1(x)
+    def __call__(self, x):
+        if not isinstance(x, mx.array):
+            x = map(mx.array, x)
+        x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
 
@@ -143,40 +146,47 @@ class ResNet (nn.Module):
 Work for tmr:
     * figure out how to train the model; what's batch iterate and what do i do
     * use gpu
-    * actually train
-    * save weights
-    * load weights
-
 Errors with loading the dataset; do i need to preprocess and reshape the data; is the loop and batch_iterate even right?
 """
 
 # Data preparation
 # If the dataset is gated/private, make sure you have run huggingface-cli login
-train_set = load_dataset("imagenet-1k", split='train')
+train_set = load_dataset("imagenet-1k", split='train[:100]')
 
 train_images = train_set['image']
 train_labels = train_set['label']
 
-test_set = load_dataset("imagenet-1k", split='test')
+test_set = load_dataset("imagenet-1k", split='test[:100]')
 
 test_images = test_set['image']
 test_labels = test_set['label']
 
-def preprocess(image_path):
-    image = Image.open(image_path)
-    image.thumbnail((256, 256)) # Resize the image, probably unnecessary
+# def preprocess(image):
+    # image.thumbnail((256, 256)) # Resize the image, probably unnecessary
 
     # Crop 
-    crop_size = 224
-    left = random.randint(0, image.width - crop_size)
-    right = left + crop_size
-    top = random.randint(0, image.height - crop_size)
-    bottom = top + crop_size
+    # crop_size = 224
+    # left = random.randint(0, image.width - crop_size)
+    # right = left + crop_size
+    # top = random.randint(0, image.height - crop_size)
+    # bottom = top + crop_size
     
-    return image.crop((left, top, right, bottom))
+    # return image.crop((left, top, right, bottom))
 
+def preprocess(image):
+    # Resize the image to the target size
+    target_size = (224, 224)
+    image = image.resize(target_size)
 
-# Hyperparameters
+    # Convert the image to a NumPy array
+    image_array = np.array(image)
+
+    # Normalize the pixel values
+    normalized_image = (image_array - np.mean(image_array)) / np.std(image_array)
+
+    return normalized_image
+
+#Hyperparameters
 lr = 1e-1 # Learning rate
 momentum = 9e-1
 dr = 1e-4 # Decay rate 
@@ -208,18 +218,25 @@ def predict(model, image):
     return predicted_class.item()
 
 def batch_iterate(batch_size, X, y):
-    perm = mx.array(np.random.permutation(y.size))
-    for s in range(0, y.size, batch_size):
-        ids = perm[s : s + batch_size]
-        yield X[ids], y[ids]
+    assert len(X) == len(y)
+    no_batches = len(X) // batch_size
+    for i in range(no_batches):
+        start = i * batch_size
+        end = start + batch_size
+        ids = np.arange(start, end)
+        yield [X[i] for i in ids if i < len(X)], [y[i] for i in ids if i < len(y)]
 
+    if len(X) % batch_size != 0:
+        start = no_batches * batch_size
+        ids = np.arange(start, batch_size)
+        yield [X[i] for i in ids if i < len(X)], [y[i] for i in ids if i < len(y)]
 
 # Training loop
 for i in range(no_epochs):
     tic = time.perf_counter()
     
     # Preprocess training images
-    preprocessed_train_images = [preprocess_image(image) for image in train_images]
+    preprocessed_train_images = [preprocess(image) for image in train_images]
 
     for X, y in batch_iterate(batch_size, preprocessed_train_images, train_labels):
         loss, grads = loss_and_grad_fn(resnet34, X, y)

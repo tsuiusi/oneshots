@@ -24,3 +24,10 @@ pip install numpy mlx torch pandas matplotlib-pyplot
 * Very vertical
 
 ![ResBlock](resblock.png)
+
+devlog:
+* the typing is wrong (loss function -> call -> input x is wrong type/format, check gpt chatlog)
+* data is loading which is good
+* I'm completely fried
+
+
