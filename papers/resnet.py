@@ -84,7 +84,7 @@ class ResBlock(nn.Module):
 
 
 class ResNet (nn.Module):
-    def __init__(self, block, layers, num_classes=1000, stride=1):
+    def __init__(self, block, layers, num_classes=1000, stride=2):
         """
         block: ResBlock
         layers = list of how many blocks are in each layer [3, 4, 6, 3]
