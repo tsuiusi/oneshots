@@ -220,22 +220,24 @@ def predict(model, image):
 def batch_iterate(batch_size, X, y):
     assert len(X) == len(y)
     no_batches = len(X) // batch_size
+
     for i in range(no_batches):
         start = i * batch_size
         end = start + batch_size
-        ids = np.arange(start, end)
-        yield [X[i] for i in ids if i < len(X)], [y[i] for i in ids if i < len(y)]
+        ids = np.arange(start, end) # ids is a list of indices
+        yield np.asarray([np.expand_dims(X[i], axis=-1) if X[i].ndim == 3 else X[i] for i in ids]), np.array([y[i] for i in ids]) # Yield so it returns X, y but keeps looping
 
     if len(X) % batch_size != 0:
         start = no_batches * batch_size
-        ids = np.arange(start, batch_size)
-        yield [X[i] for i in ids if i < len(X)], [y[i] for i in ids if i < len(y)]
-
+        ids = np.arange(start, len(X))
+        yield np.asarray([np.expand_dims(X[i], axis=-1) if X[i].ndim == 3 else X[i] for i in ids]), np.array([y[i] for i in ids])
+        
 # Training loop
 for i in range(no_epochs):
     tic = time.perf_counter()
     
-    # Preprocess training images
+    # Preprocess training images (List of 2D arrays (224, 224, 3))
+    # (sample_size, 224, 224, 3)
     preprocessed_train_images = [preprocess(image) for image in train_images]
 
     for X, y in batch_iterate(batch_size, preprocessed_train_images, train_labels):
