@@ -8,6 +8,8 @@ The title is self explanatory.
 4. Application and drawing the filter on top
 
 ## Dev notes
+* I am going to have to rotate an image in 3d space.
+* I also have no idea how to do a wraparound crown.
 * From what I'm reading the rotation is done by anchoring certain points and getting the rotated points of the face (constants)
 * Something called procrustes projection alignment
 * Calculate the face's distances and landmarks and etc
