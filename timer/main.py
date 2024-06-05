@@ -33,6 +33,7 @@ class TimerApp:
         
         self.start_button = tk.Button(master, text="Start/Stop", font=("Arial", 14, "bold"), command=self.toggle_timer)
         self.start_button.place(relx=0.5, rely=0.8, anchor=tk.CENTER)
+        self.master.attributes("-topmost", True)
         
         self.load_elapsed_time()
         self.update_time()
